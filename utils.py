@@ -105,10 +105,15 @@ def preprocess_text(df, column_name, lemm=False, dict_contractions=None):
                                                               if lemm else data_cleaning(text, dict_contractions))
 
 
-def read_process_data(path, preprocess_text_flg=False, lemm=False, contractions_path=None):
+def remove_nan_rows(df):
+    return df.dropna(subset=['text_id'])
 
+def read_process_data(path, preprocess_text_flg=False, lemm=False, contractions_path=None, remove_nan_flag=False):
     df = pd.read_csv(path, encoding="ISO-8859-1")
     df.columns = df.columns.map(rename_columns)
+
+    if remove_nan_flag:
+        df = remove_nan_rows(df)
 
     string_columns = ["text_id", "text", "selected_text", "country", "time_of_tweet", "age_of_user"]
     int_columns = ["population", "land_area", "density"]

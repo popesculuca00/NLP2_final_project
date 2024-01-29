@@ -77,17 +77,8 @@ def data_cleaning(data, dict_contractions=None):
                 data_split[idx_word] = dict_contractions[data_split[idx_word].strip()]
         data = " ".join(data_split)
 
-    # removing punctuation
-    data = re.sub(re.compile("[" + re.escape(string.punctuation) + "]"), " ", data)
-
-    # eliminate digits
-    data = re.sub(r"\d+", "", data)
-
-    # remove all single characters
-    data = re.sub(r"\s+[a-zA-Z]\s+", " ", data)
-
-    # substituting multiple blank spaces with only one
-    data = re.sub(r"\s+", " ", data, flags=re.I)
+    # removing punctuation and digits
+    data = re.sub(r"[^a-z]+", " ", data, flags=re.UNICODE)
 
     clean_text = []
     for word in data.split(" "):
@@ -103,6 +94,7 @@ def preprocess_text(df, column_name, lemm=False, dict_contractions=None):
     df[column_name + "_preprocessed"] = df[column_name].apply(lambda text: data_cleaning(lemmatization(text, lemmatizer),
                                                                                          dict_contractions) \
                                                               if lemm else data_cleaning(text, dict_contractions))
+    return df
 
 
 def remove_nan_rows(df):
@@ -130,6 +122,7 @@ def read_process_data(path, preprocess_text_flg=False, lemm=False, contractions_
         dict_contractions = None
         if contractions_path is not None:
             dict_contractions = get_contractions(contractions_path)
-        preprocess_text(df, "text", lemm, dict_contractions)
+        df = preprocess_text(df, "text", lemm, dict_contractions)
+        df = df[df["text_preprocessed"] != '']
 
     return df
